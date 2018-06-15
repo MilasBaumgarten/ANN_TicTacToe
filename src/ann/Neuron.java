@@ -18,11 +18,6 @@ public class Neuron {
 		this.layer = layer;
 		activationFunction = activFunc;
 	}
-//	
-//	public Neuron(Neuron n){
-//		this.layer = n.layer;
-//		activationFunction = n.activationFunction;
-//	}
 	
 	protected void calcOutput(){
 		calculated = true;

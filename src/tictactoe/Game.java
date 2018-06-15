@@ -1,8 +1,5 @@
 package tictactoe;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 
 public class Game {
@@ -10,77 +7,76 @@ public class Game {
 	private static int fieldSizeY = 3;
 	private static int rounds = 1;
 	
-	private static int[] score;
+	private static int[] scoreBoard;
 	private static int[][] field;
 	
 	private static boolean gameover = false;
-	private static int currentPlayer = 1;
+	private static Player currentPlayer;
+	
+	// players
+	private static Player p1 = new HumanPlayer(1);
+	private static Player p2 = new HumanPlayer(2);
 	
 	public static void main(String[] args){
 		// setup
 		field = new int[fieldSizeX][fieldSizeY];	// create board (standard field value = 0)
-		score = new int[rounds];
+		scoreBoard = new int[rounds];
 		
 		
+		// play x rounds
 		for (int i = 0; i < rounds; i++){
+			// game runs until a player wins
 			while(!gameover){
-				Position pos = getInput();
-				turn(pos.x, pos.y);
-				checkWinner();
+				// switch player
+				currentPlayer = (currentPlayer == p1)? p2 : p1;
+				
+				turn();
+				
+				// visualize game
 				printBoard();
 			}
+			
+			gameWon();
+			
+			// reset board after win/ draw
 			clearBoard();
 		}
 	}
 	
-	private static Position getInput(){
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	/**
+	 * Gets input form current player.
+	 * Tries to execute input.
+	 */
+	public static void turn(){
+		Position pos = p1.getInput();
 		
-		Position pos = new Position(0, 0);
-		
-		System.out.print("X: ");
-		try {
-			pos.x = Integer.parseInt(br.readLine()) - 1;
-		} catch (NumberFormatException | IOException e) {
-			e.printStackTrace();
+		// check if field is already taken
+		if (field[pos.x][pos.y] == 0){
+			field[pos.x][pos.y] = currentPlayer.getSymbol();
+			
+		} else{
+			System.out.println(pos.x + ":" + pos.x + " = " + field[pos.x][pos.y]);
+			System.out.println("Cell already taken!");
+			
+			turn();
 		}
-
-		System.out.print("Y: ");
-		try {
-			pos.y = Integer.parseInt(br.readLine()) - 1;
-		} catch (NumberFormatException | IOException e) {
-			e.printStackTrace();
-		}
 		
-		return pos;
+		checkWinner();
 	}
 	
-	private static void clearBoard(){
-		field = new int[fieldSizeX][fieldSizeY];
-	}
-	
+	/**
+	 * Check whether the current player won.
+	 */
 	private static void checkWinner(){
 		boolean won = true;
-		
-		int player;
-		
-		// temp. switch players (because of player switch after turn)
-		if (currentPlayer == 1){
-			player = 2;
-		} else{
-			player = 1;
-		}
 		
 		// check horizontal
 		for (int x = 0; x < fieldSizeX; x++){
 			for (int y = 0; y < fieldSizeY; y++){
-				if (field[x][y] != player){
+				if (field[x][y] != currentPlayer.getSymbol()){
 					won = false;
 					break;
 				}
-				
-				System.out.print("field[" + x + "][" + y + "]: ");
-				System.out.println(field[x][y] + " != " + player + " | " + won);
 			}
 			
 			if (won){
@@ -93,13 +89,10 @@ public class Game {
 		for (int y = 0; y < fieldSizeY; y++){
 			won = true;
 			for (int x = 0; x < fieldSizeX; x++){
-				if (field[x][y] != player){
+				if (field[x][y] != currentPlayer.getSymbol()){
 					won = false;
 					break;
 				}
-				
-				System.out.print("field[" + x + "][" + y + "]: ");
-				System.out.println(field[x][y] + " != " + player + " | " + won);
 			}
 			
 			if (won){
@@ -108,35 +101,57 @@ public class Game {
 			}
 		}
 		
-		// diagonal check
-		//
-		//
-		//
-	}
-	
-	public static void turn(int placementX, int placementY){
-		// check if field is already taken
-		if (field[placementX][placementY] == 0){
-			field[placementX][placementY] = currentPlayer;
-			
-			if (currentPlayer == 1){
-				currentPlayer = 2;
-			} else{
-				currentPlayer = 1;
+		// diagonal check (right top to left bottom)
+		for (int y = 0; y < fieldSizeY; y++){
+			won = true;
+			if (field[field.length - y - 1][y] != currentPlayer.getSymbol()){
+				won = false;
+				break;
 			}
 			
-		} else{
-			System.out.println(placementX + ":" + placementY + " = " + field[placementX][placementY]);
-			System.out.println("Platz ist bereits belegt!");
-			
-			Position pos = getInput();
-			turn(pos.x,pos.y);
 		}
+		if (won){
+			gameover = true;
+			return;
+		}
+		
+		// diagonal check (left top to right bottom)
+				for (int y = 0; y < fieldSizeY; y++){
+					won = true;
+					if (field[y][y] != currentPlayer.getSymbol()){
+						won = false;
+						break;
+					}
+					
+				}
+				if (won){
+					gameover = true;
+					return;
+				}
 	}
 	
+	/**
+	 * Prints win message.
+	 * Additional configurations (e.g. score board) can be done here.
+	 */
+	private static void gameWon(){
+		gameover = false;
+		System.out.println("Player " + currentPlayer.getSymbol() + " won!");
+	}
+	
+	/**
+	 * Displays board.
+	 */
 	private static void printBoard(){
 		for (int x = 0; x < fieldSizeX; x++){
 			System.out.println(Arrays.toString(field[x]));
 		}
+	}
+	
+	/**
+	 * Resets board to default configuration (each cell = 0).
+	 */
+	private static void clearBoard(){
+		field = new int[fieldSizeX][fieldSizeY];
 	}
 }
