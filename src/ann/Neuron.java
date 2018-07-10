@@ -31,6 +31,9 @@ public class Neuron {
 	}
 	
 	public double getOutput(){
+		if (!calculated){
+			calcOutput();
+		}
 		return output;
 	}
 	

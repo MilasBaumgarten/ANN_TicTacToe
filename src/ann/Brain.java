@@ -1,8 +1,10 @@
 package ann;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import ann.math.*;
+import tictactoe.Board;
 
 public class Brain {
 	private ArrayList<InputNeuron> inputNeurons = new ArrayList<InputNeuron>();
@@ -76,6 +78,14 @@ public class Brain {
 
 	// call to run input values through ann
 	public void transmit(){
+		for (Neuron neuron : hiddenNeurons){
+			neuron.calculated = false;
+		}
+		
+		for (Neuron neuron : outputNeurons){
+			neuron.calculated = false;
+		}
+		
 		for (Connection con : connections){
 			con.transmitSignal();
 		}
@@ -90,6 +100,26 @@ public class Brain {
 				inputNeurons.get(i).setValue(values[i]);
 			}
 		}
+	}
+	
+	public double[] getOutput(Board board){
+		double[] output = new double[outputNeurons.size()];
+		
+		for (int i = 0; i < outputNeurons.size(); i ++){
+			output[i] = outputNeurons.get(i).getOutput();
+		}
+		
+		// clean output
+		for (int x = 0; x < board.getSizeX(); x++){
+			for (int y = 0; y < board.getSizeY(); y ++){
+				if (board.get(x, y) != 0){
+					output[x + board.getSizeX() * y] = 0;
+				}
+			}
+		}
+		System.out.println(Arrays.toString(output));
+
+		return output;
 	}
 
 	public void printOutput(){

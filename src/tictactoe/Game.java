@@ -1,5 +1,13 @@
 package tictactoe;
 
+import ann.Brain;
+import ann.math.Sigmoid;
+
+
+/* TODO
+ * - Unentschieden checken
+ * - teste ob Neuron calculated Probleme macht
+ */
 public class Game {
 	private static int fieldSizeX = 3;
 	private static int fieldSizeY = 3;
@@ -16,6 +24,8 @@ public class Game {
 	private static Player p2 = new HumanPlayer(2);
 	
 	public static void main(String[] args){
+		Brain ai = new Brain(fieldSizeX * fieldSizeY, 3, fieldSizeX * fieldSizeY, 3, 0, new Sigmoid(), new Sigmoid());
+		
 		// play x rounds
 		for (int round = 0; round < rounds; round++){
 			// game runs until a player wins
@@ -23,7 +33,11 @@ public class Game {
 				// switch player
 				currentPlayer = (currentPlayer == p1)? p2 : p1;
 				
-				turn();
+				if (currentPlayer == p1){
+					turnPlayer();
+				} else{
+					turnAI(ai);
+				}
 				
 				// visualize game
 				board.printBoard();
@@ -51,7 +65,32 @@ public class Game {
 			System.out.println("Cell already taken!");
 			
 			turnPlayer();
+		}
+		
+		gameover = board.checkWinner(currentPlayer);
+	}
+	
+	/**
+	 * Gets input from neuronal net.
+	 */
+	public static void turnAI(Brain ai){
+		ai.setValues(board.getValues());
+		
+		ai.transmit();
+		
+		double[] values = ai.getOutput(board);
+		
+		// find highest value
+		int pos = 0;
+		double max = values[0];
+		for (int i = 1; i < values.length; i++){
+			if (max < values[i]){
+				max = values[i];
+				pos = i;
 			}
+		}
+		
+		board.set(pos % fieldSizeX, (int) Math.floor(pos / fieldSizeX), currentPlayer.getSymbol());
 		
 		gameover = board.checkWinner(currentPlayer);
 	}
