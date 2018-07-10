@@ -17,7 +17,7 @@ public class Game {
 	
 	public static void main(String[] args){
 		// play x rounds
-		for (int i = 0; i < rounds; i++){
+		for (int round = 0; round < rounds; round++){
 			// game runs until a player wins
 			while(!gameover){
 				// switch player
@@ -37,22 +37,21 @@ public class Game {
 	}
 	
 	/**
-	 * Gets input form current player.
+	 * Gets input from current player.
 	 * Tries to execute input.
 	 */
-	public static void turn(){
+	public static void turnPlayer(){
 		Position pos = p1.getInput();
 		
 		// check if field is already taken
 		if (board.get(pos.x,pos.y) == 0){
 			board.set(pos.x,pos.y, currentPlayer.getSymbol());
-			
 		} else{
 			System.out.println(pos.x + ":" + pos.x + " = " + board.get(pos.x,pos.y));
 			System.out.println("Cell already taken!");
 			
-			turn();
-		}
+			turnPlayer();
+			}
 		
 		gameover = board.checkWinner(currentPlayer);
 	}
