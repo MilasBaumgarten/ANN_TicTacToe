@@ -1,6 +1,9 @@
 package tictactoe;
 
-import ann.Brain;
+import java.util.Random;
+
+import ann.Connection;
+import ann.math.Linear;
 import ann.math.Sigmoid;
 
 
@@ -11,96 +14,170 @@ import ann.math.Sigmoid;
 public class Game {
 	private static int fieldSizeX = 3;
 	private static int fieldSizeY = 3;
-	private static int rounds = 1;
 	
-	private static int[] scoreBoard = new int[rounds];
 	private static Board board = new Board(fieldSizeX, fieldSizeY);
 	
 	private static boolean gameover = false;
 	private static Player currentPlayer;
 	
-	// players
-	private static Player p1 = new HumanPlayer(1);
-	private static Player p2 = new HumanPlayer(2);
+	private static int brainsPerGeneration = 10;
+	private static int maxGeneration = 5;
+	private static double maxMutation = 0.2;
+	
+	private static final double scoreWin = 1;
+	private static final double scoreDraw = 0.5;
+	private static final double scoreLoss = -0.5;
 	
 	public static void main(String[] args){
-		Brain ai = new Brain(fieldSizeX * fieldSizeY, 3, fieldSizeX * fieldSizeY, 3, 0, new Sigmoid(), new Sigmoid());
+		// setup AI players
+		Player[] players = new ANNPlayer[brainsPerGeneration];
 		
-		// play x rounds
-		for (int round = 0; round < rounds; round++){
-			// game runs until a player wins
-			while(!gameover){
-				// switch player
-				currentPlayer = (currentPlayer == p1)? p2 : p1;
-				
-				if (currentPlayer == p1){
-					turnPlayer();
+		for (int i = 0; i < brainsPerGeneration; i ++) {
+			players[i] = new ANNPlayer(board, fieldSizeX, fieldSizeY, 9, 1, new Sigmoid(), new Linear());
+		}
+		
+		// let x generations compete against eachother
+		for (int generation = 0; generation < maxGeneration; generation++){
+			
+			// let every brain play against every other brain
+			for (int firstPlayerNum = 0; firstPlayerNum < brainsPerGeneration - 1; firstPlayerNum++){
+				for (int secondPlayerNum = firstPlayerNum + 1; secondPlayerNum < brainsPerGeneration; secondPlayerNum++){
+					
+					playRound(players[firstPlayerNum], players[secondPlayerNum], false);
+				}
+			}
+			
+			printPlayerScore(players);
+			
+			// find cahmpions
+			Player[] bestPlayers = findBestPlayers(players);
+			
+			// breed next generation
+			players[0] = new ANNPlayer((ANNPlayer) bestPlayers[0]);
+			players[1] = new ANNPlayer((ANNPlayer) bestPlayers[1]);
+			
+			Random rand = new Random();
+			
+			// generate next brains aka players by mutating the champions
+			for (int i = 2; i < brainsPerGeneration; i ++){
+				if (i % 2 == 0){
+					players[i] = new ANNPlayer((ANNPlayer) bestPlayers[0]);
 				} else{
-					turnAI(ai);
+					players[i] = new ANNPlayer((ANNPlayer) bestPlayers[1]);
 				}
 				
-				// visualize game
+				
+				
+				for (Connection con : ((ANNPlayer) players[i]).getConnections()){
+					// change weights
+					//		huge changes during early generations
+					//		small changes during later generations
+					con.weight += rand.nextDouble() * ((maxGeneration - generation) / (double)maxGeneration) * maxMutation;
+				}
+			}
+		}
+		
+		
+		
+		
+		//playRound(players[0], players[1], false);
+		//playRound(players[0], new HumanPlayer(board), true);
+	}
+	
+	private static void playRound(Player p1, Player p2, boolean visualizeBoard){
+		p1.symbol = 1;
+		p2.symbol = 2;
+		while(!gameover){
+			// switch player
+			currentPlayer = (currentPlayer == p1)? p2 : p1;
+				
+			if (currentPlayer == p1){
+				gameover = p1.turn();
+			} else{
+				gameover = p2.turn();
+			}
+			
+			// visualize game
+			if (visualizeBoard){
 				board.printBoard();
+				System.out.println("");
 			}
 			
-			gameWon();
-			
-			// reset board after win/ draw
-			board.clearBoard();
-		}
-	}
-	
-	/**
-	 * Gets input from current player.
-	 * Tries to execute input.
-	 */
-	public static void turnPlayer(){
-		Position pos = p1.getInput();
-		
-		// check if field is already taken
-		if (board.get(pos.x,pos.y) == 0){
-			board.set(pos.x,pos.y, currentPlayer.getSymbol());
-		} else{
-			System.out.println(pos.x + ":" + pos.x + " = " + board.get(pos.x,pos.y));
-			System.out.println("Cell already taken!");
-			
-			turnPlayer();
-		}
-		
-		gameover = board.checkWinner(currentPlayer);
-	}
-	
-	/**
-	 * Gets input from neuronal net.
-	 */
-	public static void turnAI(Brain ai){
-		ai.setValues(board.getValues());
-		
-		ai.transmit();
-		
-		double[] values = ai.getOutput(board);
-		
-		// find highest value
-		int pos = 0;
-		double max = values[0];
-		for (int i = 1; i < values.length; i++){
-			if (max < values[i]){
-				max = values[i];
-				pos = i;
+			// check for a draw
+			if (!gameover){
+				boolean isDraw = true;
+				
+				for (int x = 0; x < board.getSizeX() && isDraw; x++){
+					for (int y = 0; y < board.getSizeY() && isDraw; y++){
+						if (board.get(x, y) == 0){
+							isDraw = false;
+						}
+					}
+				}
+				
+				// give points to players
+				if (isDraw){
+					p1.score += scoreDraw;
+					p2.score += scoreDraw;
+					
+					if (!visualizeBoard){
+						board.printBoard();
+					}
+					
+					System.out.println("Draw!");
+					
+					board.clearBoard();
+					return;
+				}
 			}
 		}
 		
-		board.set(pos % fieldSizeX, (int) Math.floor(pos / fieldSizeX), currentPlayer.getSymbol());
+		if (!visualizeBoard){
+			board.printBoard();
+		}
 		
-		gameover = board.checkWinner(currentPlayer);
+		gameWon(p1, p2);
+		
+		// reset board after win/ draw
+		board.clearBoard();
 	}
 	
 	/**
 	 * Prints win message.
 	 * Additional configurations (e.g. score board) can be done here.
 	 */
-	private static void gameWon(){
+	private static void gameWon(Player p1, Player p2){
 		gameover = false;
+		
+		// give points to players (current player is always winner
+		p1.score += (p1 == currentPlayer)? scoreWin : scoreLoss;
+		p2.score += (p2 == currentPlayer)? scoreWin : scoreLoss;
+		
+		
 		System.out.println("Player " + currentPlayer.getSymbol() + " won!");
+	}
+
+	private static void printPlayerScore(Player[] players){
+		for (int i = 0; i < brainsPerGeneration; i++) {
+			System.out.println("Player " + i + " Score: " + players[i].score);
+		}
+	}
+	
+	private static Player[] findBestPlayers(Player[] players){
+		Player first = players[0];
+		Player second = players[0];
+		
+		for (int i = 1; i < players.length; i++) {
+			if (players[i].score >= first.score){
+				second = first;
+				first = players[i];
+			}
+		}
+		
+		// cleanup
+		first.score = 0;
+		second.score = 0;
+		
+		return new Player[] {first, second};
 	}
 }

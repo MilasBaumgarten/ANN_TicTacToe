@@ -1,9 +1,9 @@
 package ann;
 
 public class Connection {
-	private Neuron start;
-	private Neuron end;
-	private double weight;
+	public Neuron start;
+	public Neuron end;
+	public double weight;
 	
 	public Connection(Neuron start, Neuron end, double weight){
 		this.start = start;

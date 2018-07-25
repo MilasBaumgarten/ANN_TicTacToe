@@ -1,11 +1,11 @@
 package ann;
 
-import ann.math.IActivationFunction;
+import ann.math.Linear;
 
 public class InputNeuron extends Neuron {
 
-	public InputNeuron(double value, IActivationFunction activFunc, int layer) {
-		super(activFunc, layer);
+	public InputNeuron(double value, int layer) {
+		super(new Linear(), layer);
 		super.output = super.outputBeforeActivation = value;
 		super.calculated = true;
 	}
