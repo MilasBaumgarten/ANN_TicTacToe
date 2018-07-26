@@ -8,7 +8,6 @@ public class Neuron {
 	public ArrayList<Double> input = new ArrayList<Double>();
 	protected double outputBeforeActivation;
 	protected double output;
-	private double bias = 1.0;
 	protected IActivationFunction activationFunction;
 	protected int layer;
 	

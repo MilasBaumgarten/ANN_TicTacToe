@@ -11,8 +11,6 @@ abstract class Player {
 		this.board = board;
 	}
 	
-	//public abstract Position getInput();
-	
 	public abstract boolean turn();
 	
 	public int getSymbol(){

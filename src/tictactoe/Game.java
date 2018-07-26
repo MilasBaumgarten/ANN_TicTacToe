@@ -7,10 +7,6 @@ import ann.math.Linear;
 import ann.math.Sigmoid;
 
 
-/* TODO
- * - Unentschieden checken
- * - teste ob Neuron calculated Probleme macht
- */
 public class Game {
 	private static int fieldSizeX = 3;
 	private static int fieldSizeY = 3;
@@ -24,9 +20,9 @@ public class Game {
 	private static int maxGeneration = 200;
 	private static double maxMutation = 0.2;
 	
-	private static final double scoreWin = 1;
-	private static final double scoreDraw = 0.5;
-	private static final double scoreLoss = -0.5;
+	private static final double SCOREWIN = 1;
+	private static final double SCOREDRAW = 0.5;
+	private static final double SCORELOSS = -2;
 	
 	public static void main(String[] args){
 		// setup AI players
@@ -51,7 +47,7 @@ public class Game {
 			
 			printPlayerScore(players);
 			
-			// find cahmpions
+			// find champions
 			Player[] bestPlayers = findBestPlayers(players);
 			
 			// breed next generation
@@ -116,8 +112,8 @@ public class Game {
 				
 				// give points to players
 				if (isDraw){
-					p1.score += scoreDraw;
-					p2.score += scoreDraw;
+					p1.score += SCOREDRAW;
+					p2.score += SCOREDRAW;
 					
 					if (!visualizeBoard){
 						board.printBoard();
@@ -149,8 +145,8 @@ public class Game {
 		gameover = false;
 		
 		// give points to players (current player is always winner
-		p1.score += (p1 == currentPlayer)? scoreWin : scoreLoss;
-		p2.score += (p2 == currentPlayer)? scoreWin : scoreLoss;
+		p1.score += (p1 == currentPlayer)? SCOREWIN : SCORELOSS;
+		p2.score += (p2 == currentPlayer)? SCOREWIN : SCORELOSS;
 		
 		
 		System.out.println("Player " + currentPlayer.getSymbol() + " won!");

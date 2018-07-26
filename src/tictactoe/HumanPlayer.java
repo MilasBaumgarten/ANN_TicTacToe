@@ -14,6 +14,7 @@ public class HumanPlayer extends Player {
 	 * Gets input from current player.
 	 * Tries to execute input.
 	 */
+	@Override
 	public boolean turn(){
 		Position pos = getInput();
 		
