@@ -21,7 +21,7 @@ public class Game {
 	private static Player currentPlayer;
 	
 	private static int brainsPerGeneration = 10;
-	private static int maxGeneration = 5;
+	private static int maxGeneration = 200;
 	private static double maxMutation = 0.2;
 	
 	private static final double scoreWin = 1;
@@ -38,6 +38,8 @@ public class Game {
 		
 		// let x generations compete against eachother
 		for (int generation = 0; generation < maxGeneration; generation++){
+			System.out.println("------------------------------------------------------------");
+			System.out.println("Current Generation: " + generation);
 			
 			// let every brain play against every other brain
 			for (int firstPlayerNum = 0; firstPlayerNum < brainsPerGeneration - 1; firstPlayerNum++){
@@ -77,11 +79,8 @@ public class Game {
 			}
 		}
 		
-		
-		
-		
-		//playRound(players[0], players[1], false);
-		//playRound(players[0], new HumanPlayer(board), true);
+		// play a round against the learned ai
+		playRound(findBestPlayers(players)[0], new HumanPlayer(board), true);
 	}
 	
 	private static void playRound(Player p1, Player p2, boolean visualizeBoard){
