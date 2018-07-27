@@ -16,9 +16,10 @@ public class Game {
 	private static boolean gameover = false;
 	private static Player currentPlayer;
 	
-	private static int brainsPerGeneration = 10;
+	private static int brainsPerGeneration = 25;
 	private static int maxGeneration = 200;
-	private static double maxMutation = 0.2;
+	private static double maxMutation = 0.4;
+	private static double minMutation = 0.1;
 	
 	private static final double SCOREWIN = 1;
 	private static final double SCOREDRAW = 0.5;
@@ -31,6 +32,8 @@ public class Game {
 		for (int i = 0; i < brainsPerGeneration; i ++) {
 			players[i] = new ANNPlayer(board, fieldSizeX, fieldSizeY, 9, 1, new Sigmoid(), new Linear());
 		}
+		
+		playRound(new HumanPlayer(board), players[0], true);
 		
 		// let x generations compete against eachother
 		for (int generation = 0; generation < maxGeneration; generation++){
@@ -70,13 +73,16 @@ public class Game {
 					// change weights
 					//		huge changes during early generations
 					//		small changes during later generations
-					con.weight += rand.nextDouble() * ((maxGeneration - generation) / (double)maxGeneration) * maxMutation;
+					con.weight += rand.nextDouble() * Math.max(((maxGeneration - generation) / (double)maxGeneration) * maxMutation, minMutation);
 				}
 			}
 		}
 		
+		//TODO let human play against ai after x sessions (to learn)
+		
 		// play a round against the learned ai
 		playRound(findBestPlayers(players)[0], new HumanPlayer(board), true);
+		playRound(new HumanPlayer(board), findBestPlayers(players)[0], true);
 	}
 	
 	private static void playRound(Player p1, Player p2, boolean visualizeBoard){
