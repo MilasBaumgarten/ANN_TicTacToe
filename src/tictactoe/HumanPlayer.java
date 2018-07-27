@@ -22,7 +22,7 @@ public class HumanPlayer extends Player {
 		if (board.get(pos.x,pos.y) == 0){
 			board.set(pos.x,pos.y, symbol);
 		} else{
-			System.out.println(pos.x + ":" + pos.x + " = " + board.get(pos.x,pos.y));
+			System.out.println((pos.x + 1) + ":" + (pos.x + 1) + " = " + board.get(pos.x,pos.y)); 
 			System.out.println("Cell already taken!");
 			
 			turn();

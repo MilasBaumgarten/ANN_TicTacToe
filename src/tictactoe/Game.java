@@ -18,8 +18,8 @@ public class Game {
 	
 	private static int brainsPerGeneration = 25;
 	private static int maxGeneration = 200;
-	private static double maxMutation = 0.4;
-	private static double minMutation = 0.1;
+	private static double maxMutation = 5.0;
+	private static double minMutation = 0.2;
 	
 	private static final double SCOREWIN = 1;
 	private static final double SCOREDRAW = 0.5;
@@ -33,18 +33,19 @@ public class Game {
 			players[i] = new ANNPlayer(board, fieldSizeX, fieldSizeY, 9, 1, new Sigmoid(), new Linear());
 		}
 		
-		playRound(new HumanPlayer(board), players[0], true);
+		//playRound(new HumanPlayer(board), players[0], true);
 		
 		// let x generations compete against eachother
 		for (int generation = 0; generation < maxGeneration; generation++){
 			System.out.println("------------------------------------------------------------");
-			System.out.println("Current Generation: " + generation);
+			System.out.println("Current Generation: " + (generation + 1));
 			
 			// let every brain play against every other brain
 			for (int firstPlayerNum = 0; firstPlayerNum < brainsPerGeneration - 1; firstPlayerNum++){
 				for (int secondPlayerNum = firstPlayerNum + 1; secondPlayerNum < brainsPerGeneration; secondPlayerNum++){
 					
 					playRound(players[firstPlayerNum], players[secondPlayerNum], false);
+					playRound(players[secondPlayerNum], players[firstPlayerNum], false);
 				}
 			}
 			
@@ -172,6 +173,8 @@ public class Game {
 			if (players[i].score >= first.score){
 				second = first;
 				first = players[i];
+			} else if (players[i].score >= second.score) {  
+		        second = players[i]; 
 			}
 		}
 		
